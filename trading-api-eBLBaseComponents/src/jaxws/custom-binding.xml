@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxws:bindings
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jaxws="https://jakarta.ee/xml/ns/jaxws"
+	jaxb:version="4.0.2" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb">
+	<jaxws:bindings
+		node="//xs:complexType[@name='ReviseInventoryStatusRequestType']">
+		<jaxws:bindings node=".//xs:any">
+			<jaxb:property name="reviseInventoryStatusRequestTypeAny" />
+		</jaxws:bindings>
+	</jaxws:bindings>	
+	<jaxws:bindings
+		node="//xs:complexType[@name='EBayPLUSPreferenceType']">
+			 <jaxb:class name="eBayPLUSPreferenceType"/>
+	</jaxws:bindings>
+	<jaxb:bindings xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb" version="4.0.2">
+    <jaxb:globalBindings underscoreBinding="asCharInWord"/>
+    </jaxb:bindings>
+</jaxws:bindings>

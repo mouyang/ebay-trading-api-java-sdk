@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	jaxb:version="3.0" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	xmlns:jaxws="https://jakarta.ee/xml/ns/jaxws"
+	jaxb:extensionBindingPrefixes="xjc">
+
+	<jaxb:globalBindings typesafeEnumMaxMembers="999999"
+		collectionType="indexed">
+		<jaxb:serializable uid="12343" />
+		<xjc:javaType name="java.time.LocalDateTime" xmlType="xs:dateTime"
+                      adapter="io.github.threetenjaxb.core.LocalDateTimeXmlAdapter"/>
+	</jaxb:globalBindings>
+</jaxb:bindings>
