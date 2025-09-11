@@ -8,6 +8,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     <name>trading-api-parent</name>
     <modules>
         <module>trading-api-eBLBaseComponents</module>
+        <module>trading-api-sdkcore</module>
     </modules>
     <properties>
         <ebay-api.version>1379</ebay-api.version>
@@ -30,18 +31,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
                 <version>${jaxws.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.xml.ws</groupId>
-                <artifactId>jaxws-tools</artifactId>
-                <version>${jaxws.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>${jaxws.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
                 <version>${jaxws.version}</version>
             </dependency>
             <dependency>
@@ -66,7 +57,26 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
                         </dependency>
                     </dependencies>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 </project>
