@@ -32,7 +32,9 @@ cp $pwd/pom.xml .
 cp $pwd/trading-api-eBLBaseComponents/pom.xml trading-api-eBLBaseComponents
 ## the mv is not required but it will show up in `git status` as a moved file as a 
 mv build/custom-binding.xml build/jaxb-binding.xjb trading-api-eBLBaseComponents/src/jaxws
-cp $pwd/trading-api-eBLBaseComponents/src/jaxws/custom-binding.xml $pwd/trading-api-eBLBaseComponents/src/jaxws/jaxb-binding.xjb trading-api-eBLBaseComponents/src/jaxws
+cp $pwd/trading-api-eBLBaseComponents/src/jaxws/custom-binding.xml \
+	$pwd/trading-api-eBLBaseComponents/src/jaxws/jaxb-binding.xjb \
+	trading-api-eBLBaseComponents/src/jaxws
 rm -rf source/core/src/com/ebay/soap/eBLBaseComponents/*.java
 # sdkcore
 mkdir -p trading-api-sdkcore trading-api-sdkcore/src/main/java
@@ -58,5 +60,15 @@ rm trading-api-sdkcore/src/main/java/DialogFetchToken.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/cache/FeaturesDownloader.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/eBayDetailsHelper1.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ui/DialogAccount.java
+## Temporarily remove anything related to Java AWT + Swing in order to focus first on the API.  API and UI should be 
+## compiled and packaged separately.
+mkdir -p trading-api-sdkcore/src/main/java/com/ebay/sdk
+cp $pwd/src/main/java/com/ebay/sdk/ApiCall.java $pwd/src/main/java/com/ebay/sdk/ApiCredential.java \
+	trading-api-sdkcore/src/main/java/com/ebay/sdk
+rm trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ServiceControlManager.java \
+	trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ShippingServiceOptionTreeBuilder.java \
+	trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ui/ControlBuilder.java \
+	trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ui/GuiUtil.java \
+	trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ui/JIDCheckBox.java
 # build
 mvn clean install
