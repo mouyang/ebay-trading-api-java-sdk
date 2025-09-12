@@ -30,21 +30,17 @@ find . -name *.class -o -name *.jar | xargs rm
 mkdir -p trading-api-eBLBaseComponents trading-api-eBLBaseComponents/src/jaxws
 cp $pwd/pom.xml .
 cp $pwd/trading-api-eBLBaseComponents/pom.xml trading-api-eBLBaseComponents
-## the mv is not required but it will show up in `git status` as a moved file as a 
-mv build/custom-binding.xml build/jaxb-binding.xjb trading-api-eBLBaseComponents/src/jaxws
 cp $pwd/trading-api-eBLBaseComponents/src/jaxws/custom-binding.xml \
 	$pwd/trading-api-eBLBaseComponents/src/jaxws/jaxb-binding.xjb \
 	trading-api-eBLBaseComponents/src/jaxws
-rm -rf source/core/src/com/ebay/soap/eBLBaseComponents/*.java
 # sdkcore
-mkdir -p trading-api-sdkcore trading-api-sdkcore/src/main/java
+mkdir -p trading-api-sdkcore
 cp $pwd/trading-api-sdkcore/pom.xml trading-api-sdkcore
-## must copy+remove instead of moving when working with multiple directories.  `mv` on the second and subsequent 
-## directories will fail because the target is not empty. 
-for dir in source/core/src source/helper/src; do
-    cp -r $dir/* trading-api-sdkcore/src/main/java
-    rm -rf $dir
-done
+mkdir -p trading-api-sdkcore/src/main/java/com/ebay/sdk
+cp -r source/core/src/com/ebay/sdk/* trading-api-sdkcore/src/main/java/com/ebay/sdk
+mkdir -p trading-api-sdkcore/src/main/java
+cp -r source/helper/src/* trading-api-sdkcore/src/main/java
+
 ## Fortunately this works because the imports follow a consistent spacing format.  OpenRewrite would have been 
 ## preferred to refactor this but attempting use this was successful.
 find trading-api-sdkcore/src/main/java -name *.java | xargs sed -i -e \
@@ -62,7 +58,6 @@ rm trading-api-sdkcore/src/main/java/DialogFetchToken.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ui/DialogAccount.java
 ## Temporarily remove anything related to Java AWT + Swing in order to focus first on the API.  API and UI should be 
 ## compiled and packaged separately.
-mkdir -p trading-api-sdkcore/src/main/java/com/ebay/sdk
 cp $pwd/trading-api-sdkcore/src/main/java/com/ebay/sdk/ApiCall.java $pwd/trading-api-sdkcore/src/main/java/com/ebay/sdk/ApiCredential.java \
 	trading-api-sdkcore/src/main/java/com/ebay/sdk
 rm trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ServiceControlManager.java \
