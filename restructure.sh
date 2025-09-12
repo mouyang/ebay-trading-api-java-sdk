@@ -63,7 +63,7 @@ rm trading-api-sdkcore/src/main/java/DialogFetchToken.java \
 ## Temporarily remove anything related to Java AWT + Swing in order to focus first on the API.  API and UI should be 
 ## compiled and packaged separately.
 mkdir -p trading-api-sdkcore/src/main/java/com/ebay/sdk
-cp $pwd/src/main/java/com/ebay/sdk/ApiCall.java $pwd/src/main/java/com/ebay/sdk/ApiCredential.java \
+cp $pwd/trading-api-sdkcore/src/main/java/com/ebay/sdk/ApiCall.java $pwd/trading-api-sdkcore/src/main/java/com/ebay/sdk/ApiCredential.java \
 	trading-api-sdkcore/src/main/java/com/ebay/sdk
 rm trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ServiceControlManager.java \
 	trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ShippingServiceOptionTreeBuilder.java \
