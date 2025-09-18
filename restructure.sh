@@ -51,8 +51,7 @@ find trading-api-sdkcore/src/main/java -name *.java | xargs sed -i -e \
 ## source repo.  These removed classes may be reintroduced later but will need to be evaluated on a case-by-case basis.
 ##
 ## Files are removed individually because it is hard to join class references in files with Call/Type classes.
-rm trading-api-sdkcore/src/main/java/DialogFetchToken.java \
-    trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/GetCategoryFeaturesHelper.java \
+rm trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/GetCategoryFeaturesHelper.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/cache/CategoriesDownloader.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/cache/DetailsDownloader.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/cache/FeaturesDownloader.java \
