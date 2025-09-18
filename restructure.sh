@@ -49,6 +49,8 @@ find trading-api-sdkcore/src/main/java -name *.java | xargs sed -i -e \
     -e "s/^import javax\.xml\.bind/import jakarta.xml.bind/"
 ## Drop anything core or helper class that uses a *Call class or a *Type that does not have a source file in the 
 ## source repo.  These removed classes may be reintroduced later but will need to be evaluated on a case-by-case basis.
+##
+## Files are removed individually because it is hard to join class references in files with Call/Type classes.
 rm trading-api-sdkcore/src/main/java/DialogFetchToken.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/GetCategoryFeaturesHelper.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/cache/CategoriesDownloader.java \
@@ -56,14 +58,12 @@ rm trading-api-sdkcore/src/main/java/DialogFetchToken.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/cache/FeaturesDownloader.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/eBayDetailsHelper1.java \
     trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ui/DialogAccount.java
+
 ## Temporarily remove anything related to Java AWT + Swing in order to focus first on the API.  API and UI should be 
-## compiled and packaged separately.
+## compiled and packaged separately.  Catches import statements but any fully-qualified references will need to be 
+## addressed individually.
 cp $pwd/trading-api-sdkcore/src/main/java/com/ebay/sdk/ApiCall.java $pwd/trading-api-sdkcore/src/main/java/com/ebay/sdk/ApiCredential.java \
-	trading-api-sdkcore/src/main/java/com/ebay/sdk
-rm trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ServiceControlManager.java \
-	trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ShippingServiceOptionTreeBuilder.java \
-	trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ui/ControlBuilder.java \
-	trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ui/GuiUtil.java \
-	trading-api-sdkcore/src/main/java/com/ebay/sdk/helper/ui/JIDCheckBox.java
+    trading-api-sdkcore/src/main/java/com/ebay/sdk
+find trading-api-sdkcore -name *.java | xargs grep -l -e "^import java\.awt\..*;$" -e  "^import javax\.swing\..*;$" | xargs rm
 # build
 mvn clean install
