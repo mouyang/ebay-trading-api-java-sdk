@@ -1,18 +1,5 @@
 #!/usr/bin/bash
 
-cleanup() {
-    # come back to this directory
-    cd $pwd
-}
-
-# clear out everything and point to the desired branch
-reset_repo() {
-    git restore --staged .
-    git checkout .
-    git clean -fd
-    git checkout $1
-}
-
 copy_to_root() {
     # new .gitignore entries
     echo "" >> .gitignore
@@ -56,6 +43,24 @@ copy_to_sdkcore() {
     find $module_dir -name *.java | xargs grep -l -e "^import java\.awt\..*;$" -e  "^import javax\.swing\..*;$" | xargs rm
 }
 
+copy_to_ui() {
+    module_dir="trading-api-ui"
+    copy_maven_pom $module_dir
+    copy_source_files $module_dir
+    # only keep files that reference AWT/Swing
+    find $module_dir -name *.java | xargs grep -L -e "^import java\.awt\..*;$" -e  "^import javax\.swing\..*;$" | xargs rm
+    # this file was not covered in the common copy_source_files method because it doesn't follow Java packaging structure
+    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
+    cp source/core/src/DialogFetchToken.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
+    # drop these files because they are part of the sdkcore module
+    rm $module_dir/$mvn_src_dir/com/ebay/sdk/ApiCall.java $module_dir/$mvn_src_dir/com/ebay/sdk/ApiCredential.java
+    # bring in the bare minimum Call classes needed for the UI classes
+    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/call
+    cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/call/FetchTokenCall.java \
+        $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/call/GetSessionIDCall.java \
+        $module_dir/$mvn_src_dir/com/ebay/sdk/call
+}
+
 copy_maven_pom() {
     module_dir=${1:-.}
     mkdir -p $module_dir
@@ -63,36 +68,53 @@ copy_maven_pom() {
 }
 
 copy_source_files() {
-    mkdir -p $1/$mvn_src_dir/com/ebay/sdk
-    cp -r source/core/src/com/ebay/sdk $1/$mvn_src_dir/com/ebay/sdk
-    mkdir -p $1/$mvn_src_dir
-    cp -r source/helper/src/com $1/$mvn_src_dir
+    target=$1
+    mkdir -p $target/$mvn_src_dir/com/ebay/sdk
+    cp -r source/core/src/com/ebay/sdk $target/$mvn_src_dir/com/ebay
+    mkdir -p $target/$mvn_src_dir
+    cp -r source/helper/src/com $target/$mvn_src_dir
 
     ## Fortunately this works because the imports follow a consistent spacing format.  OpenRewrite would have been 
     ## preferred to refactor this but attempting use this was successful.
-    find $1/$mvn_src_dir -name *.java | xargs sed -i -e \
+    find $target/$mvn_src_dir -name *.java | xargs sed -i -e \
         "s/^import javax\.xml\.ws/import jakarta.xml.ws/" \
         -e "s/^import javax\.xml\.soap/import jakarta.xml.soap/" \
         -e "s/^import javax\.xml\.bind/import jakarta.xml.bind/"
 }
 
-trap cleanup EXIT
+if [[ "$(basename "$0")" == "restructure.sh" ]]; then
+    cleanup() {
+        # come back to this directory
+        cd $pwd
+    }
 
-pwd=`pwd`
-target=$1
-branch=${2:-main}
+    # clear out everything and point to the desired branch
+    reset_repo() {
+        git restore --staged .
+        git checkout .
+        git clean -fd
+        git checkout $1
+    }
 
-mvn_src_dir="src/main/java"
+    trap cleanup EXIT
 
-# easier to move to the target repo and restore after instead of staying in this repo because specifying the target 
-# directory in for each app (git, mvn, etc if it can be specified at all)
-cd $target && reset_repo $branch
+    pwd=`pwd`
+    target=$1
+    branch=${2:-main}
 
-module_pids=()
-copy_to_root & module_pids+=($!)
-copy_to_eBLBaseComponents & module_pids+=($!)
-copy_to_sdkcore & module_pids+=($!)
-wait $module_pids
+    mvn_src_dir="src/main/java"
 
-# build
-mvn clean install
+    # easier to move to the target repo and restore after instead of staying in this repo because specifying the target 
+    # directory in for each app (git, mvn, etc if it can be specified at all)
+    cd $target && reset_repo $branch
+
+    module_pids=()
+    copy_to_root & module_pids+=($!)
+    copy_to_eBLBaseComponents & module_pids+=($!)
+    copy_to_sdkcore & module_pids+=($!)
+    copy_to_ui & module_pids+=($!)
+    wait $module_pids
+
+    # build
+    mvn clean install
+fi

@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.ebay.developer</groupId>
+    <artifactId>trading-api-ui</artifactId>
+    <packaging>jar</packaging>
+    <version>2.0.0-SNAPSHOT</version>
+    <name>trading-api-ui</name>
+    <url>http://maven.apache.org</url>
+    <parent>
+        <groupId>com.ebay.developer</groupId>
+        <artifactId>trading-api-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+    </parent>
+    <dependencies>
+        <dependency>
+            <groupId>com.ebay.developer</groupId>
+            <artifactId>trading-api-sdkcore</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>

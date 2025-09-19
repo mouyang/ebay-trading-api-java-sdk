@@ -9,6 +9,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     <modules>
         <module>trading-api-eBLBaseComponents</module>
         <module>trading-api-sdkcore</module>
+        <module>trading-api-ui</module>
     </modules>
     <properties>
         <ebay-api.version>1379</ebay-api.version>
