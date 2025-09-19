@@ -61,6 +61,10 @@ copy_to_ui() {
         $module_dir/$mvn_src_dir/com/ebay/sdk/call
 }
 
+copy_to_sdkcore_android() {
+    copy_maven_pom "trading-api-sdkcore-android"
+}
+
 copy_maven_pom() {
     module_dir=${1:-.}
     mkdir -p $module_dir
@@ -113,8 +117,9 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     copy_to_eBLBaseComponents & module_pids+=($!)
     copy_to_sdkcore & module_pids+=($!)
     copy_to_ui & module_pids+=($!)
+    copy_to_sdkcore_android & module_pids+=($!)
     wait $module_pids
 
     # build
-    mvn clean install
+    mvn -T 2C clean install
 fi
