@@ -27,8 +27,8 @@
                 <version>3.5.1</version>
                 <executions>
                     <execution>
-                        <id>java.xml</id>
-                        <phase>compile</phase>
+                        <id>extract.java.xml.mod</id>
+                        <phase>process-classes</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -54,6 +54,9 @@
                         <include>../conf/**</include>
                         <include>../legal/**</include>
                     </includes>
+                    <excludes>
+                        <exclude>module-info.class</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
