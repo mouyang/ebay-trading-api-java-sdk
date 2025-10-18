@@ -104,7 +104,6 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
 
     pwd=`pwd`
     target=$1
-    java_home=${2:-`which java`}
     branch=${3:-main}
 
     mvn_src_dir="src/main/java"
@@ -122,5 +121,5 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     wait $module_pids
 
     # build
-    mvn -T 2C clean install -Djava.home="$java_home"
+    mvn -T 2C clean install
 fi
