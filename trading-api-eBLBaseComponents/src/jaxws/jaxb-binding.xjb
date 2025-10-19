@@ -3,11 +3,10 @@
 	jaxb:version="3.0" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	xmlns:jaxws="https://jakarta.ee/xml/ns/jaxws"
 	jaxb:extensionBindingPrefixes="xjc">
-
 	<jaxb:globalBindings typesafeEnumMaxMembers="999999"
 		collectionType="indexed">
 		<jaxb:serializable uid="12343" />
-		<xjc:javaType name="java.time.LocalDateTime" xmlType="xs:dateTime"
-                      adapter="io.github.threetenjaxb.core.LocalDateTimeXmlAdapter"/>
+		<xjc:javaType name="java.time.Instant" xmlType="xs:dateTime"
+                      adapter="io.github.threetenjaxb.core.InstantXmlAdapter"/>
 	</jaxb:globalBindings>
 </jaxb:bindings>

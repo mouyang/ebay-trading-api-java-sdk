@@ -17,7 +17,7 @@
 package com.ebay.sdk.call;
 
 import java.lang.String;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.ebay.sdk.*;
 import com.ebay.soap.eBLBaseComponents.*;
@@ -54,7 +54,7 @@ public class FetchTokenCall extends com.ebay.sdk.ApiCall {
     private String secretID = null;
     private String sessionID = null;
     private String returnedToken = null;
-    private LocalDateTime hardExpirationTime = null;
+    private Instant hardExpirationTime = null;
     private String returnedRESTToken = null;
 
     /**
@@ -141,9 +141,9 @@ public class FetchTokenCall extends com.ebay.sdk.ApiCall {
      * Valid after executing the API.
      * Gets the returned FetchTokenResponseType.hardExpirationTime.
      *
-     * @return LocalDateTime
+     * @return Instant
      */
-    public LocalDateTime getHardExpirationTime() {
+    public Instant getHardExpirationTime() {
         return this.hardExpirationTime;
     }
 
