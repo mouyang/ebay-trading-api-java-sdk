@@ -38,7 +38,9 @@ android {
     }
     publishing {
         // https://proandroiddev.com/how-to-locally-test-your-android-or-kmp-library-using-maven-local-b1283824d628
-        singleVariant("release")
+        singleVariant("release") {
+            withSourcesJar()
+        }
         // END https://proandroiddev.com/how-to-locally-test-your-android-or-kmp-library-using-maven-local-b1283824d628
     }
 }
