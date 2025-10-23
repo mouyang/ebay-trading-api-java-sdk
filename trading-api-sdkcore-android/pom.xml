@@ -3,24 +3,38 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ebay.developer</groupId>
     <artifactId>trading-api-sdkcore-android</artifactId>
-    <packaging>jar</packaging>
+    <packaging>aar</packaging>
     <version>2.0.0-SNAPSHOT</version>
     <name>trading-api-sdkcore-android</name>
     <url>http://maven.apache.org</url>
     <properties>
         <jackson.version>2.20.0</jackson.version>
+        <okhttp.version>5.2.1</okhttp.version>
     </properties>
     <parent>
         <groupId>com.ebay.developer</groupId>
         <artifactId>trading-api-parent</artifactId>
         <version>2.0.0-SNAPSHOT</version>
     </parent>
+    <repositories>
+        <repository>
+            <id>google</id>
+            <url>https://maven.google.com/</url>
+        </repository>
+    </repositories>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp-bom</artifactId>
+                <version>${okhttp.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -53,6 +67,11 @@
         <dependency>
             <groupId>javax.xml.stream</groupId>
             <artifactId>stax-api</artifactId>
+        </dependency>
+        <!-- -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-android</artifactId>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>

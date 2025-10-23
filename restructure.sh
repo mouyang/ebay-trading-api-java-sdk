@@ -4,8 +4,10 @@ copy_to_root() {
     # new .gitignore entries
     echo "" >> .gitignore
     cat $pwd/gitignore >> .gitignore
-    # parent pon
+    # parent pom
     copy_maven_pom
+    # gradle
+    cp -r $pwd/build.gradle.kts $pwd/settings.gradle.kts $pwd/gradle.properties $pwd/local.properties $pwd/mvnvm.properties $pwd/gradlew $pwd/gradlew.bat $pwd/gradle/ .
 }
 
 copy_to_eBLBaseComponents() {
@@ -62,7 +64,12 @@ copy_to_ui() {
 }
 
 copy_to_sdkcore_android() {
-    copy_maven_pom "trading-api-sdkcore-android"
+    module_dir="trading-api-sdkcore-android"
+    src_main="src/main"
+
+    mkdir -p $module_dir/$src_main
+    cp $pwd/$module_dir/build.gradle.kts $module_dir 
+    cp -r $pwd/$module_dir/$src_main $module_dir/$src_main
 }
 
 copy_maven_pom() {
@@ -121,5 +128,5 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     wait $module_pids
 
     # build
-    mvn -T 2C clean install
+    mvn -T 2C -U clean install && ./gradlew publishToMavenLocal
 fi

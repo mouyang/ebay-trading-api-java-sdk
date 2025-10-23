@@ -1,3 +1,7 @@
-
-# maven build directory
+# maven
 target
+# gradle
+build
+.gradle
+# Android Studio
+local.properties

@@ -9,14 +9,15 @@ Approach
 
 This repository codifies the conversion steps to meet the stated purpose and the repository conversion steps from the repository itself.  This facilitates development because conversion as code makes it really to test and re-test any changes.  When converting a repository, there is no need to track mistakes and intermediate changes.  Only the final repository state matters.  
 
+Currently this project uses Gradle for trading-api-sdkcore-android and Maven for everything else.  This is because of the original developer's lack of knowledge of Android + Gradle at the time.  Gradle is required to build an AAR.  The Maven modules will eventually be migrated to Gradle because Maven doesn't have a plugin to build AAR files.
+
 Minimum Build Requirements
 
 * Java SE 11
 * Maven 3
+* Gradle
 
 Installation Steps
 
-After pulling this repository, 
-
-# Pull the eBay Trading API repository
-# Run the conversion script `./restructure.sh <EBAY_TRADING_API_DIR>`
+* Clone the eBay Trading API repository in <EBAY_TRADING_API_DIR>
+* Run the conversion script `./restructure.sh <EBAY_TRADING_API_DIR>`
