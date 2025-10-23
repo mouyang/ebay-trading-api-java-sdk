@@ -69,7 +69,7 @@ copy_to_sdkcore_android() {
 
     mkdir -p $module_dir/$src_main
     cp $pwd/$module_dir/build.gradle.kts $module_dir 
-    cp -r $pwd/$module_dir/$src_main $module_dir/$src_main
+    cp -r $pwd/$module_dir/$src_main $module_dir/src
 }
 
 copy_maven_pom() {
