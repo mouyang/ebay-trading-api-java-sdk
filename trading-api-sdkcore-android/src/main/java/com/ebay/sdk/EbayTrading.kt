@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.ebay.soap.eBLBaseComponents.AbstractRequestType
 import com.ebay.soap.eBLBaseComponents.AbstractResponseType
+import com.ebay.soap.eBLBaseComponents.EBayAPIInterface
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.PropertyName
@@ -14,6 +15,9 @@ import com.fasterxml.jackson.databind.type.TypeFactory
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector
+import jakarta.jws.WebMethod
+import jakarta.jws.WebParam
+import jakarta.jws.WebResult
 import jakarta.xml.bind.annotation.XmlElement
 import jakarta.xml.bind.annotation.XmlSchema
 import jakarta.xml.bind.annotation.XmlType
@@ -29,6 +33,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
+import java.lang.IllegalArgumentException
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
@@ -57,14 +62,23 @@ class EbayTrading(
         xmlMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
     }
 
-    // https://github.com/FasterXML/jackson-dataformat-xml/issues/18#issuecomment-1308125741
-    // AddDefaultNamespaceIntrospector
-    private class AddDefaultNamespaceIntrospector(typeFactory: TypeFactory) : JakartaXmlBindAnnotationIntrospector(typeFactory) {
-        override fun findRootName(ac: AnnotatedClass) : PropertyName {
-            return PropertyName(ac.getAnnotation(XmlType::class.java).name,
-                getPackageNamespace(ac.annotated))
+    /* This makes sense because WSDL operations are uniquely referenced by name.  Relevant
+       information on operations, like element root name and response class, should never be
+       hardcoded.  Rather it should be pulled from generated annotations (which are derived from
+       WSDL and therefore is authoritative).
+     */
+    val webMethodsByOperationName : Map<String, Method> = buildMap {
+        EBayAPIInterface::class.java.methods.forEach action@{ method ->
+            val webMethod = method.getAnnotation(WebMethod::class.java)
+            if (null == webMethod || webMethod.exclude) return@action
+            put(webMethod.operationName, method)
         }
+    }
 
+    // Propagate the root namespace if it is not provided in the child elements
+    // source: https://github.com/FasterXML/jackson-dataformat-xml/issues/18#issuecomment-1308125741
+    private class AddDefaultNamespaceIntrospector(typeFactory: TypeFactory)
+        : JakartaXmlBindAnnotationIntrospector(typeFactory) {
         private fun getPackageNamespace(c: Class<*>): String? {
             @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
             return c.`package`.getAnnotation(XmlSchema::class.java).namespace
@@ -84,13 +98,41 @@ class EbayTrading(
         }
     }
 
+    /**
+     * Use this method if the desired WSDL operation follows a particular naming convention.
+     *
+     * - The desired operation is the simple class name with the string "RequestType" is stripped.
+     */
     fun call(request: AbstractRequestType, accessToken: String) : AbstractResponseType {
+        val assumedCallName = request::class.java.simpleName.replace("RequestType", "")
+        try {
+            return call(assumedCallName, request, accessToken)
+        } catch (_ : IllegalArgumentException) {
+            throw IllegalArgumentException("assumed operation $assumedCallName not found")
+        }
+    }
+
+    /**
+     * This is a more generic method.  The desired WSDL operation needs to be specified (callName
+     * parameter).
+     *
+     * TODO Generalize so the interface is valid for non-Request-Response operations.  It just so
+     * happens the original developer only needs Request-Response operations, but WSDL-specific can
+     * eventually be refactored out of this component and other operation types (One-Way,
+     * Solicit-Response, Notification) would need to be supported.
+     */
+    fun call(callName: String, request: AbstractRequestType, accessToken: String) : AbstractResponseType {
         suspend fun inner() : AbstractResponseType {
-            val callName = request::class.java.simpleName.replace("RequestType", "")
-            val responseClass = Class.forName("${request::class.java.packageName}.${callName}ResponseType")
+            val wsMethod = webMethodsByOperationName[callName]
+            if (null == wsMethod) {
+                throw IllegalArgumentException("operation not found for callName $callName")
+            }
+            val wsParam: WebParam = wsMethod.parameters[0].getAnnotation(WebParam::class.java)!!
             val httpRequest = Request.Builder()
                 .url(environment.url.toString())
-                .post(xmlMapper.writeValueAsBytes(request)
+                .post(xmlMapper.writer()
+                    .withRootName(PropertyName(wsParam.name, wsParam.targetNamespace))
+                    .writeValueAsBytes(request)
                     .toRequestBody("text/xml; charset=UTF-8".toMediaType()))
                 .header("X-EBAY-API-SITEID", siteId)
                 .header("X-EBAY-API-COMPATIBILITY-LEVEL", apiVersion)
@@ -120,7 +162,8 @@ class EbayTrading(
             // END generated by Copilot :)
             val call = httpClient.newCall(httpRequest)
             val response = call.await()
-            return xmlMapper.readValue(response.body.string(), responseClass) as AbstractResponseType
+            return xmlMapper.reader()
+                .readValue(response.body.string(), wsMethod.returnType) as AbstractResponseType
         }
 
         return runBlocking {
