@@ -57,7 +57,7 @@ class EbayTrading(
         xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true)
         // eBay seems to return a lot of undocumented elements that are not part of the WSDL.
         // This will prevent parsing errors due to such properties
-        xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         // reduces request payloads by not including properties not being set explicitly
         xmlMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
     }
@@ -134,7 +134,7 @@ class EbayTrading(
     }
 
     fun call(callName: String, request: AbstractRequestType, accessToken: String) : AbstractResponseType {
-        return call(callName, request, { accessToken })
+        return call(callName, request, accessToken)
     }
 
     /**
