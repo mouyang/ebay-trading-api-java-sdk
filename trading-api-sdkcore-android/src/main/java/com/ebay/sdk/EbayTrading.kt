@@ -10,17 +10,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.PropertyName
 import com.fasterxml.jackson.databind.cfg.MapperConfig
 import com.fasterxml.jackson.databind.introspect.Annotated
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass
 import com.fasterxml.jackson.databind.type.TypeFactory
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector
 import jakarta.jws.WebMethod
 import jakarta.jws.WebParam
-import jakarta.jws.WebResult
 import jakarta.xml.bind.annotation.XmlElement
 import jakarta.xml.bind.annotation.XmlSchema
-import jakarta.xml.bind.annotation.XmlType
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -33,7 +30,6 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
-import java.lang.IllegalArgumentException
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
@@ -45,7 +41,11 @@ class EbayTrading(
     val environment: Environment = Environment.PRODUCTION,
     val apiVersion: String,
     val siteId: String,
-    val httpClient: OkHttpClient = OkHttpClient()) {
+    val httpClient: OkHttpClient = OkHttpClient(),
+    /**
+     * This is required in order to use the call methods without the accessToken as an argument.
+     */
+    val accessTokenSupplier: (() -> String)? = null) {
 
     enum class Environment(val url: Uri) {
         SANDBOX("https://api.sandbox.ebay.com/ws/api.dll".toUri()),
@@ -98,30 +98,52 @@ class EbayTrading(
         }
     }
 
+
     /**
-     * Use this method if the desired WSDL operation follows a particular naming convention.
-     *
-     * - The desired operation is the simple class name with the string "RequestType" is stripped.
+     * By the convention used in the WSDL schema, the desired operation is the simple class name
+     * with the string "RequestType" is stripped from the end.
+     */
+    private fun assumedCallName(request: AbstractRequestType) : String {
+        return request::class.java.simpleName.replace("RequestType", "")
+    }
+
+    /**
+     * must have accessTokenSupplier in order to use this method
+     * will use implicit call name based on request class
+     */
+    fun call(request: AbstractRequestType) : AbstractResponseType {
+        return call(assumedCallName(request), request, accessTokenSupplier!!)
+    }
+
+    /**
+     * will use implicit call name based on request class
      */
     fun call(request: AbstractRequestType, accessToken: String) : AbstractResponseType {
-        val assumedCallName = request::class.java.simpleName.replace("RequestType", "")
         try {
-            return call(assumedCallName, request, accessToken)
+            return call(assumedCallName(request), request, accessToken)
         } catch (_ : IllegalArgumentException) {
-            throw IllegalArgumentException("assumed operation $assumedCallName not found")
+            throw IllegalArgumentException("assumed operation for ${request::class.java.name} not found")
         }
     }
 
     /**
-     * This is a more generic method.  The desired WSDL operation needs to be specified (callName
-     * parameter).
-     *
+     * must have accessTokenSupplier in order to use this method
+     */
+    fun call(callName: String, request: AbstractRequestType) : AbstractResponseType {
+        return call(callName, request, accessTokenSupplier!!)
+    }
+
+    fun call(callName: String, request: AbstractRequestType, accessToken: String) : AbstractResponseType {
+        return call(callName, request, { accessToken })
+    }
+
+    /**
      * TODO Generalize so the interface is valid for non-Request-Response operations.  It just so
      * happens the original developer only needs Request-Response operations, but WSDL-specific can
      * eventually be refactored out of this component and other operation types (One-Way,
      * Solicit-Response, Notification) would need to be supported.
      */
-    fun call(callName: String, request: AbstractRequestType, accessToken: String) : AbstractResponseType {
+    fun call(callName: String, request: AbstractRequestType, accessTokenSupplier: () -> String) : AbstractResponseType {
         suspend fun inner() : AbstractResponseType {
             val wsMethod = webMethodsByOperationName[callName]
             if (null == wsMethod) {
@@ -136,7 +158,7 @@ class EbayTrading(
                     .toRequestBody("text/xml; charset=UTF-8".toMediaType()))
                 .header("X-EBAY-API-SITEID", siteId)
                 .header("X-EBAY-API-COMPATIBILITY-LEVEL", apiVersion)
-                .header("X-EBAY-API-IAF-TOKEN", accessToken)
+                .header("X-EBAY-API-IAF-TOKEN", accessTokenSupplier())
                 .header("X-EBAY-API-CALL-NAME", callName)
                 .build()
             // generated by Copilot :)
