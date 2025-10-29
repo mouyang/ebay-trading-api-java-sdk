@@ -111,6 +111,7 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
 
     pwd=`pwd`
     target=$1
+    api_version=$2
     branch=${3:-main}
 
     mvn_src_dir="src/main/java"
@@ -128,5 +129,6 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     wait $module_pids
 
     # build
-    mvn -T 2C -U clean install && ./gradlew publishToMavenLocal
+    mvn -T 2C -U clean install -Debay-api.version=$2 &&
+      ./gradlew clean publishToMavenLocal -PebayApiVersion=$2
 fi

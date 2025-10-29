@@ -4,7 +4,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     <groupId>com.ebay.developer</groupId>
     <artifactId>trading-api-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>${version}</version>
     <name>trading-api-parent</name>
     <modules>
         <module>trading-api-eBLBaseComponents</module>
@@ -12,12 +12,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
         <module>trading-api-ui</module>
     </modules>
     <properties>
-        <ebay-api.version>1379</ebay-api.version>
         <!-- https://developer.ebay.com/api-docs/static/gs_use-ebay-sdks-widgets-and.html#wsdls -->
         <ebay-wsdl.url>https://developer.ebay.com/webservices/${ebay-api.version}/ebaysvc.wsdl</ebay-wsdl.url>
         <jaxws.version>4.0.2</jaxws.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <version>2.0.0-${ebay-api.version}-SNAPSHOT</version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -59,14 +59,14 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
                     </dependencies>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <groupId>com.sap.prd.mobile.ios.maven.plugins</groupId>
+                    <artifactId>resolve-pom-maven-plugin</artifactId>
+                    <version>1.0</version>
                     <executions>
                         <execution>
-                            <id>attach-sources</id>
+                            <id>resolve-pom-props</id>
                             <goals>
-                                <goal>jar</goal>
+                                <goal>resolve-pom-props</goal>
                             </goals>
                         </execution>
                     </executions>
@@ -75,8 +75,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
+                <groupId>com.sap.prd.mobile.ios.maven.plugins</groupId>
+                <artifactId>resolve-pom-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

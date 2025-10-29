@@ -4,13 +4,13 @@
     <groupId>com.ebay.developer</groupId>
     <artifactId>trading-api-sdkcore</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>${version}</version>
     <name>trading-api-sdkcore</name>
     <url>http://maven.apache.org</url>
     <parent>
         <groupId>com.ebay.developer</groupId>
         <artifactId>trading-api-parent</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>${version}</version>
     </parent>
     <properties>
         <!-- Eventhough the source URL is case-insensitive, the SDK assumes the file name has this particular case. -->
@@ -20,7 +20,7 @@
         <dependency>
             <groupId>com.ebay.developer</groupId>
             <artifactId>trading-api-eBLBaseComponents</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <version>${version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.xml.ws</groupId>

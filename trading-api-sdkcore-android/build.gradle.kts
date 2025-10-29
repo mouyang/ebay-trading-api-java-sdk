@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.ebay.developer"
-version = "2.0.0-SNAPSHOT"
+version = "2.0.0-${project.properties["ebayApiVersion"]}-SNAPSHOT"
 
 android {
     namespace = "com.ebay.sdk"
@@ -56,7 +56,7 @@ dependencies {
     implementation(platform("com.fasterxml.jackson:jackson-bom:2.20.0"))
     implementation(platform("com.squareup.okhttp3:okhttp-bom:5.2.1"))
     implementation("androidx.core:core-ktx:1.16.0")
-    implementation("com.ebay.developer:trading-api-eBLBaseComponents:2.0.0-SNAPSHOT")
+    implementation("com.ebay.developer:trading-api-eBLBaseComponents:2.0.0-${project.properties["ebayApiVersion"]}-SNAPSHOT")
     implementation("com.squareup.okhttp3:okhttp-android")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
     implementation("com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations")
