@@ -13,11 +13,13 @@ This project generates classes generated from WSDL documents provided by eBay.  
 
 Currently this project uses Gradle for trading-api-sdkcore-android and Maven for everything else.  This is because of the original developer's lack of knowledge of Android + Gradle at the time.  Gradle is required to build an AAR.  The Maven modules will eventually be migrated to Gradle because Maven doesn't have a plugin to build AAR files.
 
-Minimum Build Requirements
+Environment
 
-* Java SE 11
-* Maven 3
-* Gradle
+This project was built under the following tools.  Not all of the tool versions are strict but there is no guarantee that it will work outside of these parameters.
+* Java SE 11.0.27 2025-04-15 LTS - Java 11+ is a requirement
+* Maven 3.9.9
+* Gradle 8.13
+* Windows 11 10.0 amd64
 
 Installation Steps
 
