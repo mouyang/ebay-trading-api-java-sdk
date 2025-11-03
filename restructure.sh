@@ -124,7 +124,7 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     copy_to_root & module_pids+=($!)
     copy_to_eBLBaseComponents & module_pids+=($!)
     copy_to_sdkcore & module_pids+=($!)
-    copy_to_ui & module_pids+=($!)
+    #copy_to_ui & module_pids+=($!)
     copy_to_sdkcore_android & module_pids+=($!)
     wait $module_pids
 
