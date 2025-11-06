@@ -13,6 +13,7 @@ copy_to_root() {
 copy_to_eBLBaseComponents() {
     module_dir="trading-api-eBLBaseComponents"
     copy_maven_pom $module_dir
+    copy_gradle_build $module_dir
 
     ## generate types from WSDL + remove related java source files generated from WSDL
     mkdir -p $module_dir $module_dir/src/jaxws
@@ -78,6 +79,12 @@ copy_maven_pom() {
     cp $pwd/$module_dir/pom.xml $module_dir
 }
 
+copy_gradle_build() {
+    module_dir=${1:-.}
+    mkdir -p $module_dir
+    cp $pwd/$module_dir/build.gradle.kts $module_dir
+}
+
 copy_source_files() {
     target=$1
     mkdir -p $target/$mvn_src_dir/com/ebay/sdk
@@ -129,6 +136,5 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     wait $module_pids
 
     # build
-    mvn -T 2C -U clean install -Debay-api.version=$2 &&
-      ./gradlew clean publishToMavenLocal -PebayApiVersion=$2
+    ./gradlew clean publishToMavenLocal -PebayApiVersion=$2
 fi
