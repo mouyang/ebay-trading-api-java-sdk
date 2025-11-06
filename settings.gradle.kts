@@ -22,4 +22,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "trading-api-parent"
+include(":trading-api-eBLBaseComponents")
 include(":trading-api-sdkcore-android")
