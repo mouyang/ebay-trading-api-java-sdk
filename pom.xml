@@ -80,4 +80,18 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>api-version-1331</id>
+            <activation>
+                <property>
+                    <name>ebay-api.version</name>
+                    <value>1331</value>
+                </property>
+            </activation>
+            <modules>
+                <module>trading-api-calls-1331</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

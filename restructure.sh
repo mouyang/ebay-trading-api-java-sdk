@@ -38,6 +38,7 @@ copy_to_sdkcore() {
     find $module_dir -name *.java | xargs grep -l -e "^import java\.awt\..*;$" -e  "^import javax\.swing\..*;$" | xargs rm
 
     javax_to_jakarta $module_dir
+    echo "$module_dir/$mvn_src_dir/com/ebay/sdk/TimeFilter.java" | calendar_to_instant
 }
 
 copy_to_ui() {
@@ -56,6 +57,14 @@ copy_to_ui() {
     cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/call/FetchTokenCall.java \
         $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/call/GetSessionIDCall.java \
         $module_dir/$mvn_src_dir/com/ebay/sdk/call
+}
+
+copy_calls_to_1331() {
+    module_dir="trading-api-calls-1331"
+    copy_maven_pom $module_dir
+    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/call
+    cp -r source/apiCalls/src/com/ebay/sdk/call $module_dir/$mvn_src_dir/com/ebay/sdk
+    find $module_dir -name *Call.java | calendar_to_instant
 }
 
 copy_to_sdkcore_android() {
@@ -87,6 +96,12 @@ javax_to_jakarta() {
         "s/^import javax\.xml\.ws/import jakarta.xml.ws/" \
         -e "s/^import javax\.xml\.soap/import jakarta.xml.soap/" \
         -e "s/^import javax\.xml\.bind/import jakarta.xml.bind/"
+}
+
+calendar_to_instant() {
+    xargs sed -i \
+        -e "s/java\.util\.Calendar/java.time.Instant/g" \
+        -e "s/Calendar/Instant/g"
 }
 
 if [[ "$(basename "$0")" == "restructure.sh" ]]; then
@@ -121,6 +136,7 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     copy_to_eBLBaseComponents & module_pids+=($!)
     copy_to_sdkcore & module_pids+=($!)
     #copy_to_ui & module_pids+=($!)
+    copy_calls_to_1331 & module_pids+=($!)
     copy_to_sdkcore_android & module_pids+=($!)
     wait $module_pids
 
