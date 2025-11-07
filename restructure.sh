@@ -29,12 +29,6 @@ copy_to_sdkcore() {
 
     mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk
     cp -r source/core/src/com/ebay/sdk $module_dir/$mvn_src_dir/com/ebay
-    ## Fortunately this works because the imports follow a consistent spacing format.  OpenRewrite would have been
-    ## preferred to refactor this but attempting use this was successful.
-    find $module_dir/$mvn_src_dir -name *.java | xargs sed -i -e \
-        "s/^import javax\.xml\.ws/import jakarta.xml.ws/" \
-        -e "s/^import javax\.xml\.soap/import jakarta.xml.soap/" \
-        -e "s/^import javax\.xml\.bind/import jakarta.xml.bind/"
 
     ## Temporarily remove anything related to Java AWT + Swing in order to focus first on the API.  API and UI should be 
     ## compiled and packaged separately.  Catches import statements but any fully-qualified references will need to be 
@@ -42,6 +36,8 @@ copy_to_sdkcore() {
     cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/ApiCall.java $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/ApiCredential.java \
         $module_dir/$mvn_src_dir/com/ebay/sdk
     find $module_dir -name *.java | xargs grep -l -e "^import java\.awt\..*;$" -e  "^import javax\.swing\..*;$" | xargs rm
+
+    javax_to_jakarta $module_dir
 }
 
 copy_to_ui() {
@@ -83,16 +79,11 @@ copy_gradle_build() {
     cp $pwd/$module_dir/build.gradle.kts $module_dir
 }
 
-copy_source_files() {
+javax_to_jakarta() {
     target=$1
-    mkdir -p $target/$mvn_src_dir/com/ebay/sdk
-    cp -r source/core/src/com/ebay/sdk $target/$mvn_src_dir/com/ebay
-    mkdir -p $target/$mvn_src_dir
-    cp -r source/helper/src/com $target/$mvn_src_dir
-
-    ## Fortunately this works because the imports follow a consistent spacing format.  OpenRewrite would have been 
+    ## Fortunately this works because the imports follow a consistent spacing format.  OpenRewrite would have been
     ## preferred to refactor this but attempting use this was successful.
-    find $target/$mvn_src_dir -name *.java | xargs sed -i -e \
+    find $module_dir/$mvn_src_dir -name *.java | xargs sed -i -e \
         "s/^import javax\.xml\.ws/import jakarta.xml.ws/" \
         -e "s/^import javax\.xml\.soap/import jakarta.xml.soap/" \
         -e "s/^import javax\.xml\.bind/import jakarta.xml.bind/"
