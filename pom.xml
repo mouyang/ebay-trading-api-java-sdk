@@ -91,6 +91,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
             </activation>
             <modules>
                 <module>trading-api-calls-1331</module>
+                <module>trading-api-helpers-1331</module>
             </modules>
         </profile>
     </profiles>
