@@ -41,30 +41,31 @@ copy_to_sdkcore() {
     echo "$module_dir/$mvn_src_dir/com/ebay/sdk/TimeFilter.java" | calendar_to_instant
 }
 
-copy_to_ui() {
-    module_dir="trading-api-ui"
-    copy_maven_pom $module_dir
-    copy_source_files $module_dir
-    # only keep files that reference AWT/Swing
-    find $module_dir -name *.java | xargs grep -L -e "^import java\.awt\..*;$" -e  "^import javax\.swing\..*;$" | xargs rm
-    # this file was not covered in the common copy_source_files method because it doesn't follow Java packaging structure
-    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
-    cp source/core/src/DialogFetchToken.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
-    # drop these files because they are part of the sdkcore module
-    rm $module_dir/$mvn_src_dir/com/ebay/sdk/ApiCall.java $module_dir/$mvn_src_dir/com/ebay/sdk/ApiCredential.java
-    # bring in the bare minimum Call classes needed for the UI classes
-    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/call
-    cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/call/FetchTokenCall.java \
-        $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/call/GetSessionIDCall.java \
-        $module_dir/$mvn_src_dir/com/ebay/sdk/call
-}
-
-copy_calls_to_1331() {
-    module_dir="trading-api-calls-1331"
+copy_api_calls_to_apiversion() {
+    module_dir="trading-api-calls-$1"
     copy_maven_pom $module_dir
     mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/call
     cp -r source/apiCalls/src/com/ebay/sdk/call $module_dir/$mvn_src_dir/com/ebay/sdk
-    find $module_dir -name *Call.java | calendar_to_instant
+
+    javax_to_jakarta $module_dir
+    find $module_dir -name *.java | calendar_to_instant
+}
+
+copy_helpers_to_apiversion() {
+    module_dir="trading-api-helpers-$1"
+    copy_maven_pom $module_dir
+    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/helper
+    cp -r source/helper/src/com/ebay/sdk/helper $module_dir/$mvn_src_dir/com/ebay/sdk
+
+    # this file doesn't follow Java packaging structure and so it needs to be copied manually
+    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
+    cp source/core/src/DialogFetchToken.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
+
+    cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/helper/cache/CategoriesDownloader.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/cache
+    cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/helper/cache/DetailsDownloader.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/cache
+    cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui/GuiUtil.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
+
+    javax_to_jakarta $module_dir
 }
 
 copy_to_sdkcore_android() {
@@ -115,7 +116,7 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
         git restore --staged .
         git checkout .
         git clean -fd
-        git checkout $1
+        git checkout main
     }
 
     trap cleanup EXIT
@@ -123,7 +124,6 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     pwd=`pwd`
     target=$1
     api_version=$2
-    branch=${3:-main}
 
     mvn_src_dir="src/main/java"
 
@@ -131,14 +131,22 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     # directory in for each app (git, mvn, etc if it can be specified at all)
     cd $target && reset_repo $branch
 
-    module_pids=()
-    copy_to_root & module_pids+=($!)
-    copy_to_eBLBaseComponents & module_pids+=($!)
-    copy_to_sdkcore & module_pids+=($!)
-    #copy_to_ui & module_pids+=($!)
-    copy_calls_to_1331 & module_pids+=($!)
-    copy_to_sdkcore_android & module_pids+=($!)
-    wait $module_pids
+    pids_core=()
+    copy_to_root & pids_core+=($!)
+    copy_to_eBLBaseComponents & pids_core+=($!)
+    copy_to_sdkcore & pids_core+=($!)
+    copy_to_sdkcore_android & pids_core+=($!)
+    wait $pids_core
+
+    api_version="1331"
+    checkout_hash="6a015d2f6cb219d00bf274eccfba174fd8365c1a"
+    pids_api_version=()
+    # this is the initial commit which presumably is compatible with API version 1331
+    # TODO resolve .gitignore conflict
+    git checkout $checkout_hash
+    copy_api_calls_to_apiversion $api_version & pids_api_version+=($!)
+    copy_helpers_to_apiversion $api_version & pids_api_version+=($!)
+    wait $pids_api_version
 
     # build
     ./gradlew clean publishToMavenLocal -PebayApiVersion=$2
