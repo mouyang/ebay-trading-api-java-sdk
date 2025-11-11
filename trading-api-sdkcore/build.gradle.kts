@@ -6,13 +6,6 @@ plugins {
 group = "com.ebay.developer"
 version = "2.0.0-${project.properties["ebayApiVersion"]}-SNAPSHOT"
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    }
-    withSourcesJar()
-}
-
 dependencies {
     compileOnly(project(":trading-api-eBLBaseComponents"))
     implementation("com.ebay.developer:trading-api-eBLBaseComponents:${project.version}")

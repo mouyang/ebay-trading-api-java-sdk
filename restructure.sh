@@ -13,6 +13,12 @@ copy_to_root() {
     cp -r $pwd/settings.gradle.kts $pwd/gradle.properties $pwd/local.properties $pwd/gradlew $pwd/gradlew.bat $pwd/gradle/ .
 }
 
+copy_to_core_java() {
+    module_dir="trading-api-core-java"
+    mkdir -p $module_dir
+    cp -r $pwd/$module_dir .
+}
+
 copy_to_eBLBaseComponents() {
     module_dir="trading-api-eBLBaseComponents"
     copy_maven_pom $module_dir
@@ -137,6 +143,7 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
 
     pids_core=()
     copy_to_root & pids_core+=($!)
+    copy_to_core_java & pids_core+=($!)
     copy_to_eBLBaseComponents & pids_core+=($!)
     copy_to_sdkcore & pids_core+=($!)
     copy_to_sdkcore_android & pids_core+=($!)
