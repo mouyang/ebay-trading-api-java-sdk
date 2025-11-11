@@ -8,8 +8,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     <name>trading-api-parent</name>
     <modules>
         <module>trading-api-eBLBaseComponents</module>
-        <module>trading-api-sdkcore</module>
-        <!--<module>trading-api-ui</module>-->
     </modules>
     <properties>
         <!-- https://developer.ebay.com/api-docs/static/gs_use-ebay-sdks-widgets-and.html#wsdls -->
@@ -80,6 +78,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
             </plugin>
         </plugins>
     </build>
+    <!--
     <profiles>
         <profile>
             <id>api-version-1331</id>
@@ -95,4 +94,5 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
             </modules>
         </profile>
     </profiles>
+    -->
 </project>

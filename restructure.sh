@@ -4,10 +4,13 @@ copy_to_root() {
     # new .gitignore entries
     echo "" >> .gitignore
     cat $pwd/gitignore >> .gitignore
-    # parent pom
+    # build scripts
     copy_maven_pom
+    copy_gradle_build
+    # mvnvm
+    cp $pwd/mvnvm.properties .
     # gradle
-    cp -r $pwd/build.gradle.kts $pwd/settings.gradle.kts $pwd/gradle.properties $pwd/local.properties $pwd/mvnvm.properties $pwd/gradlew $pwd/gradlew.bat $pwd/gradle/ .
+    cp -r $pwd/settings.gradle.kts $pwd/gradle.properties $pwd/local.properties $pwd/gradlew $pwd/gradlew.bat $pwd/gradle/ .
 }
 
 copy_to_eBLBaseComponents() {
@@ -26,6 +29,7 @@ copy_to_eBLBaseComponents() {
 copy_to_sdkcore() {
     module_dir="trading-api-sdkcore"
     copy_maven_pom $module_dir
+    copy_gradle_build $module_dir
 
     mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk
     cp -r source/core/src/com/ebay/sdk $module_dir/$mvn_src_dir/com/ebay
@@ -72,8 +76,8 @@ copy_to_sdkcore_android() {
     module_dir="trading-api-sdkcore-android"
     src_main="src/main"
 
-    mkdir -p $module_dir/$src_main
-    cp $pwd/$module_dir/build.gradle.kts $module_dir 
+    copy_gradle_build $module_dir
+
     cp -r $pwd/$module_dir/$src_main $module_dir/src
 }
 
@@ -149,5 +153,5 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     wait $pids_api_version
 
     # build
-    ./gradlew clean publishToMavenLocal -PebayApiVersion=$2
+    ./gradlew --stacktrace --info clean publishToMavenLocal -PebayApiVersion=$2
 fi
