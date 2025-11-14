@@ -64,7 +64,7 @@ dependencies {
        TODO Investigate ways to make the Maven-generated artifacts known to Gradle.  It may not be
        as simple as changing the output directory within Maven.
      */
-    implementation(project(":trading-api-eBLBaseComponents"))
+    compileOnly(project(":trading-api-eBLBaseComponents"))
     implementation("com.ebay.developer:trading-api-eBLBaseComponents:${project.version}")
 
     implementation("com.squareup.okhttp3:okhttp-android")

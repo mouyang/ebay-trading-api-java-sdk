@@ -1,104 +1,5 @@
 #!/usr/bin/env bash
 
-copy_to_root() {
-    # new .gitignore entries
-    echo "" >> .gitignore
-    cat $pwd/gitignore >> .gitignore
-    # parent pom
-    copy_maven_pom
-    # gradle
-    cp -r $pwd/build.gradle.kts $pwd/settings.gradle.kts $pwd/gradle.properties $pwd/local.properties $pwd/mvnvm.properties $pwd/gradlew $pwd/gradlew.bat $pwd/gradle/ .
-}
-
-copy_to_eBLBaseComponents() {
-    module_dir="trading-api-eBLBaseComponents"
-    copy_maven_pom $module_dir
-    copy_gradle_build $module_dir
-
-    ## generate types from WSDL + remove related java source files generated from WSDL
-    mkdir -p $module_dir $module_dir/src/jaxws
-    cp $pwd/$module_dir/pom.xml $module_dir
-    cp $pwd/$module_dir/src/jaxws/custom-binding.xml \
-        $pwd/$module_dir/src/jaxws/jaxb-binding.xjb \
-        $module_dir/src/jaxws
-}
-
-copy_to_sdkcore() {
-    module_dir="trading-api-sdkcore"
-    copy_maven_pom $module_dir
-
-    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk
-    cp -r source/core/src/com/ebay/sdk $module_dir/$mvn_src_dir/com/ebay
-
-    ## Temporarily remove anything related to Java AWT + Swing in order to focus first on the API.  API and UI should be 
-    ## compiled and packaged separately.  Catches import statements but any fully-qualified references will need to be 
-    ## addressed individually.
-    cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/ApiCall.java $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/ApiCredential.java \
-        $module_dir/$mvn_src_dir/com/ebay/sdk
-    find $module_dir -name *.java | xargs grep -l -e "^import java\.awt\..*;$" -e  "^import javax\.swing\..*;$" | xargs rm
-
-    javax_to_jakarta $module_dir
-    echo "$module_dir/$mvn_src_dir/com/ebay/sdk/TimeFilter.java" | calendar_to_instant
-}
-
-copy_api_calls_to_apiversion() {
-    module_dir="trading-api-calls-$1"
-    copy_maven_pom $module_dir
-    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/call
-    cp -r source/apiCalls/src/com/ebay/sdk/call $module_dir/$mvn_src_dir/com/ebay/sdk
-
-    javax_to_jakarta $module_dir
-    find $module_dir -name *.java | calendar_to_instant
-}
-
-copy_helpers_to_apiversion() {
-    module_dir="trading-api-helpers-$1"
-    copy_maven_pom $module_dir
-    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/helper
-    cp -r source/helper/src/com/ebay/sdk/helper $module_dir/$mvn_src_dir/com/ebay/sdk
-
-    # this file doesn't follow Java packaging structure and so it needs to be copied manually
-    mkdir -p $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
-    cp source/core/src/DialogFetchToken.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
-
-    cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/helper/cache/CategoriesDownloader.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/cache
-    cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/helper/cache/DetailsDownloader.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/cache
-    cp $pwd/$module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui/GuiUtil.java $module_dir/$mvn_src_dir/com/ebay/sdk/helper/ui
-
-    javax_to_jakarta $module_dir
-}
-
-copy_to_sdkcore_android() {
-    module_dir="trading-api-sdkcore-android"
-    src_main="src/main"
-
-    mkdir -p $module_dir/$src_main
-    cp $pwd/$module_dir/build.gradle.kts $module_dir 
-    cp -r $pwd/$module_dir/$src_main $module_dir/src
-}
-
-copy_maven_pom() {
-    module_dir=${1:-.}
-    mkdir -p $module_dir
-    cp $pwd/$module_dir/pom.xml $module_dir
-}
-
-copy_gradle_build() {
-    module_dir=${1:-.}
-    mkdir -p $module_dir
-    cp $pwd/$module_dir/build.gradle.kts $module_dir
-}
-
-javax_to_jakarta() {
-    target=$1
-    ## Fortunately this works because the imports follow a consistent spacing format.  OpenRewrite would have been
-    ## preferred to refactor this but attempting use this was successful.
-    find $module_dir/$mvn_src_dir -name *.java | xargs sed -i -e \
-        "s/^import javax\.xml\.ws/import jakarta.xml.ws/" \
-        -e "s/^import javax\.xml\.soap/import jakarta.xml.soap/" \
-        -e "s/^import javax\.xml\.bind/import jakarta.xml.bind/"
-}
-
 calendar_to_instant() {
     xargs sed -i \
         -e "s/java\.util\.Calendar/java.time.Instant/g" \
@@ -113,10 +14,12 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
 
     # clear out everything and point to the desired branch
     reset_repo() {
+        cd $1
         git restore --staged .
         git checkout .
         git clean -fd
         git checkout main
+        cd $pwd
     }
 
     trap cleanup EXIT
@@ -125,29 +28,65 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     target=$1
     api_version=$2
 
-    mvn_src_dir="src/main/java"
+    reset_repo $target
 
     # easier to move to the target repo and restore after instead of staying in this repo because specifying the target 
     # directory in for each app (git, mvn, etc if it can be specified at all)
-    cd $target && reset_repo $branch
-
+    # cd $target && reset_repo $branch
     pids_core=()
-    copy_to_root & pids_core+=($!)
-    copy_to_eBLBaseComponents & pids_core+=($!)
-    copy_to_sdkcore & pids_core+=($!)
-    copy_to_sdkcore_android & pids_core+=($!)
+    (cd $target/source/core/src && 
+        mkdir -p $target/trading-api-sdkcore/src/main/java && 
+        cp -r --parents . $target/trading-api-sdkcore/src/main/java) & pids_core+=($!)
+    (cd $target/source/apiCalls/src && 
+        mkdir -p $target/trading-api-version-1331/src/main/java && 
+        cp -r --parents . $target/trading-api-version-1331/src/main/java) & pids_core+=($!)
+    (cd $target/source/helper/src && 
+        mkdir -p $target/trading-api-version-1331/src/main/java && 
+        cp -r --parents . $target/trading-api-version-1331/src/main/java) & pids_core+=($!)
     wait $pids_core
 
-    api_version="1331"
-    checkout_hash="6a015d2f6cb219d00bf274eccfba174fd8365c1a"
-    pids_api_version=()
-    # this is the initial commit which presumably is compatible with API version 1331
-    # TODO resolve .gitignore conflict
-    git checkout $checkout_hash
-    copy_api_calls_to_apiversion $api_version & pids_api_version+=($!)
-    copy_helpers_to_apiversion $api_version & pids_api_version+=($!)
-    wait $pids_api_version
+    for file in `git ls-files -cmo`; do
+        if [[ "$file" == ".gitignore" ]]; then
+            echo "skipping $file"
+        elif [[ "$file" == "gitignore" ]]; then
+            cat $file >> $target/.gitignore
+        else
+            cp --parents $file $target
+        fi
+    done
+
+    # exception handling - The purpose of each transformation should be documented explicitly.
+
+    ## These classes came packaged with the original repository but this is no longer needed because they are
+    ## autogenerated from trading-api-eBLBaseComponents.
+    rm -rf $target/trading-api-sdkcore/src/main/java/com/ebay/soap
+    ## Temporarily remove anything related to Java AWT + Swing from sdkcore in order to focus first on the API.  API 
+    ## and UI components should be compiled and packaged separately.  Catches import statements but any fully-qualified 
+    ## references will need to be addressed individually.
+    cp --parents trading-api-sdkcore/src/main/java/com/ebay/sdk/ApiCall.java \
+        trading-api-sdkcore/src/main/java/com/ebay/sdk/ApiCredential.java \
+        $target
+    find $target/trading-api-sdkcore -name *.java | 
+        xargs grep -l -e "^import java\.awt\..*;$" -e  "^import javax\.swing\..*;$" | 
+        xargs rm
+    ## This file doesn't follow the Java packaging convention and therefore it is moved to conform to it.
+    mkdir -p $target/trading-api-version-1331/src/main/java/com/ebay/sdk/helper/ui && \
+    cp $target/source/core/src/DialogFetchToken.java \
+        $target/trading-api-version-1331/src/main/java/com/ebay/sdk/helper/ui
+
+    ## Convert from javax.xml to jakarta.xml because the former is not packaged for JDK9+.  Fortunately this works
+    ## because the imports follow a consistent spacing format but this is very flaky.  An AST approach like OpenRewrite
+    ## would have been preferred but it does not fit this use case.
+    find $target/trading-api-* -type f -name *.java |
+    xargs sed -i \
+        -e "s/^import javax\.xml\.ws/import jakarta.xml.ws/" \
+        -e "s/^import javax\.xml\.soap/import jakarta.xml.soap/" \
+        -e "s/^import javax\.xml\.bind/import jakarta.xml.bind/"
+    ## Modernize TimeFilter by moving from java.util to java.time
+    echo "$target/trading-api-sdkcore/src/main/java/com/ebay/sdk/TimeFilter.java" | calendar_to_instant
+    find $target/trading-api-version-1331/src/main/java/com/ebay/sdk/call -type f -name *.java | calendar_to_instant
 
     # build
-    ./gradlew clean publishToMavenLocal -PebayApiVersion=$2
+    cd $target && ./gradlew --stacktrace --info clean publishToMavenLocal -PebayApiVersion=$2
+    cd $pwd
 fi
