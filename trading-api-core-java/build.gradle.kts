@@ -1,8 +1,6 @@
-plugins {
-    `java-library`
-}
+apply(plugin = "java-library")
 
-java {
+configure<JavaPluginExtension> {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
