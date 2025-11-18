@@ -3,6 +3,7 @@ plugins {
     `maven-publish`
 }
 
+apply(from = "${rootDir}/trading-api-core-java/build.gradle.kts")
 apply(from = "${rootDir}/trading-api-core-maven/build.gradle.kts")
 
 dependencies {
