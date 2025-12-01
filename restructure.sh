@@ -38,11 +38,11 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
         mkdir -p $target/trading-api-sdkcore/src/main/java && 
         cp -r --parents . $target/trading-api-sdkcore/src/main/java) & pids_core+=($!)
     (cd $target/source/apiCalls/src && 
-        mkdir -p $target/trading-api-version/1331/src/main/java &&
-        cp -r --parents . $target/trading-api-version/1331/src/main/java) & pids_core+=($!)
+        mkdir -p $target/trading-api-version-1331/src/main/java && 
+        cp -r --parents . $target/trading-api-version-1331/src/main/java) & pids_core+=($!)
     (cd $target/source/helper/src && 
-        mkdir -p $target/trading-api-version/1331/src/main/java &&
-        cp -r --parents . $target/trading-api-version/1331/src/main/java) & pids_core+=($!)
+        mkdir -p $target/trading-api-version-1331/src/main/java && 
+        cp -r --parents . $target/trading-api-version-1331/src/main/java) & pids_core+=($!)
     wait $pids_core
 
     for file in `git ls-files -cmo`; do
@@ -70,9 +70,9 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
         xargs grep -l -e "^import java\.awt\..*;$" -e  "^import javax\.swing\..*;$" | 
         xargs rm
     ## This file doesn't follow the Java packaging convention and therefore it is moved to conform to it.
-    mkdir -p $target/trading-api-version/1331/src/main/java/com/ebay/sdk/helper/ui && \
+    mkdir -p $target/trading-api-version-1331/src/main/java/com/ebay/sdk/helper/ui && \
     cp $target/source/core/src/DialogFetchToken.java \
-        $target/trading-api-version/1331/src/main/java/com/ebay/sdk/helper/ui
+        $target/trading-api-version-1331/src/main/java/com/ebay/sdk/helper/ui
 
     ## Convert from javax.xml to jakarta.xml because the former is not packaged for JDK9+.  Fortunately this works
     ## because the imports follow a consistent spacing format but this is very flaky.  An AST approach like OpenRewrite
@@ -84,7 +84,7 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
         -e "s/^import javax\.xml\.bind/import jakarta.xml.bind/"
     ## Modernize TimeFilter by moving from java.util to java.time
     echo "$target/trading-api-sdkcore/src/main/java/com/ebay/sdk/TimeFilter.java" | calendar_to_instant
-    find $target/trading-api-version/1331/src/main/java/com/ebay/sdk/call -type f -name *.java | calendar_to_instant
+    find $target/trading-api-version-1331/src/main/java/com/ebay/sdk/call -type f -name *.java | calendar_to_instant
 
     # build
     cd $target && ./gradlew --stacktrace --info clean publishToMavenLocal -PebayApiVersion=$2
