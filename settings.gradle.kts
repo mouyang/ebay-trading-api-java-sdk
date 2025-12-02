@@ -31,13 +31,16 @@ include(":trading-api-sdkcore-android")
 /**
  * It is preferred to use the project properties directly and making it mandatory instead of setting a default value in
  * gradle.extra.  It is done for IntelliJ/Android Studio compatibility; a build sync will fail because (to my
- * knowledge) there is no way to set project properties in a run configuration.  This will result in the value being
- * set to null.
+ * knowledge) there is no way to set project properties in a run configuration.  Without this, the value will be null.
+ *
+ * A side effect of this is that build sync will only be relative to the default API version.  You can still build the
+ * project in IntelliJ/Android Studio by specifying the version in a build configuration.
  *
  * TODO Research IntelliJ/Android Studio more deeply into seeing if there is a way to provide a project property during
  * build sync or it is not possible.
  */
-gradle.extra["ebayApiVersion"]  = gradle.startParameter.projectProperties["ebayApiVersion"] ?: "1331"
-if (gradle.extra["ebayApiVersion"] == "1331") {
-    include(":trading-api-version:1331")
+gradle.extra["ebayApiVersion"] = gradle.startParameter.projectProperties["ebayApiVersion"] ?: "1331"
+val apiVersionFile = file("""trading-api-version/${gradle.extra["ebayApiVersion"]}""")
+if (apiVersionFile.exists() && apiVersionFile.isDirectory) {
+    include(""":trading-api-version:${gradle.extra["ebayApiVersion"]}""")
 }
