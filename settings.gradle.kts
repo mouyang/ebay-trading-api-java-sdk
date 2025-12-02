@@ -39,5 +39,5 @@ include(":trading-api-sdkcore-android")
  */
 gradle.extra["ebayApiVersion"]  = gradle.startParameter.projectProperties["ebayApiVersion"] ?: "1331"
 if (gradle.extra["ebayApiVersion"] == "1331") {
-    include(":trading-api-version-1331")
+    include(":trading-api-version:1331")
 }
