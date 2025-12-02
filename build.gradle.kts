@@ -10,11 +10,11 @@ plugins {
    steps will be noted in documentation.
  */
 tasks.register<Exec>("mvnCleanDelegate") {
-    commandLine("bash", "-c", """"mvn clean -Debay-api.version=${project.properties["ebayApiVersion"]}"""")
+    commandLine("bash", "-c", """"mvn clean -Debay-api.version=${gradle.extra["ebayApiVersion"]}"""")
 }
 
 tasks.register<Exec>("mvnInstallDelegate") {
-    commandLine("bash", "-c", """"mvn install -Debay-api.version=${project.properties["ebayApiVersion"]}"""")
+    commandLine("bash", "-c", """"mvn install -Debay-api.version=${gradle.extra["ebayApiVersion"]}"""")
 }
 
 tasks.getByName("clean") {

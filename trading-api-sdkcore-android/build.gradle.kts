@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.ebay.developer"
-version = "2.0.0-${project.properties["ebayApiVersion"]}-SNAPSHOT"
+version = "2.0.0-${gradle.extra["ebayApiVersion"]}-SNAPSHOT"
 
 android {
     namespace = "com.ebay.sdk"
