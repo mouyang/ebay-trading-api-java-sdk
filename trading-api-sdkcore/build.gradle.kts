@@ -15,3 +15,16 @@ dependencies {
     implementation("org.apache.servicemix.bundles:org.apache.servicemix.bundles.oro:2.0.8_5")
     implementation("org.apache.commons:commons-text:1.9")
 }
+
+configure<PublishingExtension> {
+    publications {
+        register<MavenPublication>("mavenJava") {
+            afterEvaluate {
+                from(components["java"])
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}

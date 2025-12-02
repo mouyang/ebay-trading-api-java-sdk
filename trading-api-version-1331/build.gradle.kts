@@ -11,3 +11,20 @@ dependencies {
     implementation("com.ebay.developer:trading-api-eBLBaseComponents:${project.version}")
     implementation("org.apache.commons:commons-text:1.9")
 }
+
+configure<PublishingExtension> {
+    publications {
+        register<MavenPublication>("apiVersion") {
+            afterEvaluate {
+                /* By default, the artifactId is the folder name which has the eBay API version in it.  This is not
+                   necessary because it is embeddded in the artifact itself.
+                 */
+                artifactId = "trading-api-version"
+                from(components["java"])
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
