@@ -7,7 +7,6 @@ apply(from = "${rootDir}/trading-api-core-java/build.gradle.kts")
 apply(from = "${rootDir}/trading-api-core-maven/build.gradle.kts")
 
 dependencies {
-    compileOnly(project(":trading-api-eBLBaseComponents"))
     implementation("com.ebay.developer:trading-api-eBLBaseComponents:${project.version}")
     implementation("jakarta.xml.ws:jakarta.xml.ws-api:4.0.2")
     implementation("org.slf4j:slf4j-api:1.7.5")

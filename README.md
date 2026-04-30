@@ -24,8 +24,8 @@ This project was built under the following tools and conditions.  Not all of the
 
 Installation Steps
 
-* Clone the eBay Trading API repository in <EBAY_TRADING_API_DIR>
-* Run the conversion script `./restructure.sh <EBAY_TRADING_API_DIR> <EBAY_API_VERSION>`
+* Clone the eBay Trading API repository in <FULL_QUALIFIED_EBAY_TRADING_API_DIR>
+* Run the conversion script `./restructure.sh <FULL_QUALIFIED_EBAY_TRADING_API_DIR> <EBAY_API_VERSION> <optional_RELATIVE_LOCAL_WSDL>`
 
 Changes Made
 * For wsimport generated classes - xs:dateTime no longer outputs java.util.Calendar.  It now outputs java.time.Instant.

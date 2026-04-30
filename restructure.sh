@@ -24,9 +24,13 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
 
     trap cleanup EXIT
 
+    # target directory is required.  must be a full path.
+    # api_version is required for artifact labeling purposes, and WSDL downloading if 
+    # local_wsdl will be used if specified.  will be relative to the target directory
     pwd=`pwd`
     target=$1
     api_version=$2
+    local_wsdl=$3
 
     reset_repo $target
 
@@ -87,6 +91,27 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
     find $target/trading-api-version/1331/src/main/java/com/ebay/sdk/call -type f -name *.java | calendar_to_instant
 
     # build
-    cd $target && ./gradlew --stacktrace --info clean publishToMavenLocal -PebayApiVersion=$2
+    # 
+    # Split up depending on the execution mode determined by the input parameters.  The split is done in case 
+    # downloading the WSDL is not possible.
+    #
+    # The build is split between Maven and Gradle due to a lack of satisfactory Gradle wsimport plugin.  To make this 
+    # work successfully, individual modules need to be specified individually.
+    cd $target
+    if [[ -n "$local_wsdl" ]]; then
+        echo "using local wsdl"
+        # for simplicity - rename the POM to be the standard name
+        #
+        # Separate WSDLs are required because the configuration for URLs and local files are the totallly different 
+        # (wsdlUrls and wsdlFiles respectively), and JAX-WS plugin doesn't allow for parameters to be specified on the 
+        # command line.
+        mv $target/trading-api-eBLBaseComponents/pom.local-wsdl.xml $target/trading-api-eBLBaseComponents/pom.xml
+        mvn clean install -pl trading-api-eBLBaseComponents -Debay-api.version=$api_version -Debay-wsdl.url="$target/$local_wsdl" &&
+            ./gradlew clean publishToMavenLocal -PebayApiVersion=$api_version
+    else 
+        echo "downloading wsdl" 
+        mvn clean install -pl trading-api-eBLBaseComponents -Debay-api.version=$api_version &&
+            ./gradlew clean publishToMavenLocal -PebayApiVersion=$api_version
+    fi
     cd $pwd
 fi
