@@ -95,4 +95,55 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
         </profile>
     </profiles>
     -->
+    <profiles>
+        <profile>
+            <id>web-wsdl</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>wsimport</goal>
+                                </goals>
+                                <configuration>
+                                    <wsdlUrls>
+                                        <wsdlUrl>${ebay-wsdl.url}</wsdlUrl>
+                                    </wsdlUrls>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>local-wsdl</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>wsimport</goal>
+                                </goals>
+                                <configuration>
+                                    <wsdlFiles>
+                                        <wsdlFile>${ebay-wsdl.url}</wsdlFile>
+                                    </wsdlFiles>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
