@@ -52,14 +52,23 @@ class EbayTrading(
         PRODUCTION("https://api.ebay.com/ws/api.dll".toUri())
     }
 
-    val xmlMapper: XmlMapper = XmlMapper(); init {
-        xmlMapper.setAnnotationIntrospector(AddDefaultNamespaceIntrospector(xmlMapper.typeFactory))
-        xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true)
-        // eBay seems to return a lot of undocumented elements that are not part of the WSDL.
-        // This will prevent parsing errors due to such properties
-        xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        // reduces request payloads by not including properties not being set explicitly
-        xmlMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
+    companion object {
+        private val xmlMapper: XmlMapper = XmlMapper().apply {
+            setAnnotationIntrospector(AddDefaultNamespaceIntrospector(typeFactory))
+            configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true)
+            // eBay seems to return a lot of undocumented elements that are not part of the WSDL.
+            // This will prevent parsing errors due to such properties
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            // reduces request payloads by not including properties not being set explicitly
+            setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
+        }
+
+        fun <C> unmarshal(byteArray : ByteArray, returnClass : Class<C>) : C {
+            if (returnClass.getPackage()?.name != "com.ebay.soap.eBLBaseComponents") {
+                throw IllegalArgumentException("This method is only meant for eBay classes.")
+            }
+            return xmlMapper.reader().readValue(byteArray, returnClass)
+        }
     }
 
     /* This makes sense because WSDL operations are uniquely referenced by name.  Relevant
