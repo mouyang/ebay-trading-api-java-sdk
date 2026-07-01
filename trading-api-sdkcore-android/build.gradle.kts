@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.Test
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -48,8 +50,8 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
+    testImplementation(platform(libs.junit5.bom))
+    testImplementation("org.junit.jupiter:junit-jupiter")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
@@ -66,6 +68,10 @@ dependencies {
     implementation("xerces:xercesImpl:2.12.2") {
         exclude(group = "xml-apis", module = "xml-apis")
     }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 // https://proandroiddev.com/how-to-locally-test-your-android-or-kmp-library-using-maven-local-b1283824d628

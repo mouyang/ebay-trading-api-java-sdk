@@ -107,11 +107,11 @@ if [[ "$(basename "$0")" == "restructure.sh" ]]; then
         # command line.
         mv $target/trading-api-eBLBaseComponents/pom.local-wsdl.xml $target/trading-api-eBLBaseComponents/pom.xml
         mvn clean install -pl trading-api-eBLBaseComponents -P local-wsdl -Debay-api.version=$api_version -Debay-wsdl.url="$target/$local_wsdl" &&
-            ./gradlew clean publishToMavenLocal -PebayApiVersion=$api_version
+            ./gradlew clean test publishToMavenLocal -PebayApiVersion=$api_version
     else 
         echo "downloading wsdl" 
         mvn clean install -pl trading-api-eBLBaseComponents -Debay-api.version=$api_version &&
-            ./gradlew clean publishToMavenLocal -PebayApiVersion=$api_version
+            ./gradlew clean test publishToMavenLocal -PebayApiVersion=$api_version
     fi
     cd $pwd
 fi
