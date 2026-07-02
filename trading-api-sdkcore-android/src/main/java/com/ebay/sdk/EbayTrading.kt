@@ -69,6 +69,13 @@ class EbayTrading(
             }
             return xmlMapper.reader().readValue(byteArray, returnClass)
         }
+
+        fun marshal(obj: Any): ByteArray {
+            if (obj.javaClass.getPackage()?.name != "com.ebay.soap.eBLBaseComponents") {
+                throw IllegalArgumentException("This method is only meant for eBay classes.")
+            }
+            return xmlMapper.writer().writeValueAsBytes(obj)
+        }
     }
 
     /* This makes sense because WSDL operations are uniquely referenced by name.  Relevant

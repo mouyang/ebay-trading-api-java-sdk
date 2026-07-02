@@ -2,6 +2,7 @@ package com.ebay.sdk
 
 import com.ebay.soap.eBLBaseComponents.ItemType
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.nio.charset.Charset
 
@@ -33,5 +34,20 @@ class EbayTradingTest {
         """.trimIndent().toByteArray(Charset.forName("UTF-8"))
         val item = EbayTrading.unmarshal(xml, ItemType::class.java)
         assertEquals(itemID, item.itemID)
+    }
+
+    @Test
+    fun marshal_roundTrip() {
+        val itemID = "12345"
+        val item = ItemType().apply { this.itemID = itemID }
+        val roundTripped = EbayTrading.unmarshal(EbayTrading.marshal(item), ItemType::class.java)
+        assertEquals(itemID, roundTripped.itemID)
+    }
+
+    @Test
+    fun marshal_rejectsNonEbayClass() {
+        assertThrows(IllegalArgumentException::class.java) {
+            EbayTrading.marshal("not an eBay class")
+        }
     }
 }
