@@ -24,7 +24,7 @@ class EbayTradingTest {
      * Unmarshalling should not crash because of that.
      */
     @Test
-    fun unmarshal_unknownProperties() {
+    fun unmarshal_ignoreUnknownProperties() {
         val itemID = "12345"
         val xml = """
             <Item>
@@ -34,6 +34,13 @@ class EbayTradingTest {
         """.trimIndent().toByteArray(Charset.forName("UTF-8"))
         val item = EbayTrading.unmarshal(xml, ItemType::class.java)
         assertEquals(itemID, item.itemID)
+    }
+
+    @Test
+    fun unmarshal_rejectsNonEbayClass() {
+        assertThrows(IllegalArgumentException::class.java) {
+            EbayTrading.unmarshal("<root/>".toByteArray(), String::class.java)
+        }
     }
 
     @Test
