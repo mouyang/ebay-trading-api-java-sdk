@@ -47,9 +47,11 @@ class EbayTrading(
      */
     val accessTokenSupplier: (() -> String)? = null) {
 
-    enum class Environment(val url: Uri) {
-        SANDBOX("https://api.sandbox.ebay.com/ws/api.dll".toUri()),
-        PRODUCTION("https://api.ebay.com/ws/api.dll".toUri())
+    enum class Environment(val urlString: String) {
+        SANDBOX("https://api.sandbox.ebay.com/ws/api.dll"),
+        PRODUCTION("https://api.ebay.com/ws/api.dll");
+
+        val url : Uri by lazy { urlString.toUri() }
     }
 
     companion object {
@@ -150,11 +152,7 @@ class EbayTrading(
      * will use implicit call name based on request class
      */
     fun call(request: AbstractRequestType, accessToken: String) : AbstractResponseType {
-        try {
-            return call(assumedCallName(request), request, accessToken)
-        } catch (_ : IllegalArgumentException) {
-            throw IllegalArgumentException("assumed operation for ${request::class.java.name} not found")
-        }
+        return call(assumedCallName(request), request, accessToken)
     }
 
     /**
@@ -165,7 +163,7 @@ class EbayTrading(
     }
 
     fun call(callName: String, request: AbstractRequestType, accessToken: String) : AbstractResponseType {
-        return call(callName, request, accessToken)
+        return call(callName, request, {accessToken })
     }
 
     /**

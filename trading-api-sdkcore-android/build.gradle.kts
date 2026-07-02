@@ -45,6 +45,14 @@ android {
         }
         // END https://proandroiddev.com/how-to-locally-test-your-android-or-kmp-library-using-maven-local-b1283824d628
     }
+    testOptions {
+        unitTests {
+            /* During testing, certain Android classes aren't provided.  This results in mock-hell.
+            This will eliminate exceptions due to "Method X not mocked".
+             */
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 dependencies {
@@ -52,6 +60,9 @@ dependencies {
     implementation(libs.androidx.appcompat)
     testImplementation(platform(libs.junit5.bom))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.mock-server:mockserver-junit-jupiter-no-dependencies:5.15.0")
+    testImplementation("io.mockk:mockk:1.14.11")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
