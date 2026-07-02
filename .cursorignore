@@ -1,0 +1,10 @@
+# Gradle related
+build/
+gradle/
+.gradle/
+
+# IntelliJ / Android Studio IDE Settings (Config clutter)
+.idea/
+
+# any WSDL files
+*.wsdl
