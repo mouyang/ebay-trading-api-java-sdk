@@ -53,6 +53,8 @@ class EbayTrading(
     }
 
     companion object {
+        private const val EBAY_COMPONENTS_PACKAGE = "com.ebay.soap.eBLBaseComponents"
+
         private val xmlMapper: XmlMapper = XmlMapper().apply {
             setAnnotationIntrospector(AddDefaultNamespaceIntrospector(typeFactory))
             configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true)
@@ -63,17 +65,19 @@ class EbayTrading(
             setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
         }
 
-        fun <C> unmarshal(byteArray : ByteArray, returnClass : Class<C>) : C {
-            if (returnClass.getPackage()?.name != "com.ebay.soap.eBLBaseComponents") {
+        private fun requireEbayClass(clazz: Class<*>) {
+            if (clazz.getPackage()?.name != EBAY_COMPONENTS_PACKAGE) {
                 throw IllegalArgumentException("This method is only meant for eBay classes.")
             }
+        }
+
+        fun <C> unmarshal(byteArray : ByteArray, returnClass : Class<C>) : C {
+            requireEbayClass(returnClass)
             return xmlMapper.reader().readValue(byteArray, returnClass)
         }
 
         fun marshal(obj: Any): ByteArray {
-            if (obj.javaClass.getPackage()?.name != "com.ebay.soap.eBLBaseComponents") {
-                throw IllegalArgumentException("This method is only meant for eBay classes.")
-            }
+            requireEbayClass(obj.javaClass)
             return xmlMapper.writer().writeValueAsBytes(obj)
         }
     }
