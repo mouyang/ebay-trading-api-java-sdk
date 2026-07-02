@@ -1,8 +1,12 @@
 package com.ebay.sdk
 
+import com.ebay.soap.eBLBaseComponents.EBayAPIInterface
+import com.ebay.soap.eBLBaseComponents.GetItemRequestType
 import com.ebay.soap.eBLBaseComponents.ItemType
+import jakarta.jws.WebParam
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.nio.charset.Charset
 
@@ -56,5 +60,16 @@ class EbayTradingTest {
         assertThrows(IllegalArgumentException::class.java) {
             EbayTrading.marshal("not an eBay class")
         }
+    }
+
+    @Test
+    fun marshal_rootName_roundTrip() {
+        val getItem = EBayAPIInterface::class.java.getMethod("getItem", GetItemRequestType::class.java)
+        val wsParam = getItem.parameters[0].getAnnotation(WebParam::class.java)!!
+        val itemID = "12345"
+        val request = GetItemRequestType().apply { this.itemID = itemID }
+        val xml = EbayTrading.marshal(request, wsParam.name, wsParam.targetNamespace)
+        assertTrue(String(xml, Charset.forName("UTF-8")).contains(wsParam.name))
+        assertEquals(itemID, EbayTrading.unmarshal(xml, GetItemRequestType::class.java).itemID)
     }
 }

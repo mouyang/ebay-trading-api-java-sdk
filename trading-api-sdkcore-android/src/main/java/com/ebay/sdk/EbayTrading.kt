@@ -80,6 +80,17 @@ class EbayTrading(
             requireEbayClass(obj.javaClass)
             return xmlMapper.writer().writeValueAsBytes(obj)
         }
+
+        /**
+         * Marshals [obj] using an explicit SOAP root element, as required for WSDL request bodies
+         * (see [WebParam.name] and [WebParam.targetNamespace] on [EBayAPIInterface] operations).
+         */
+        fun marshal(obj: Any, rootName: String, namespace: String): ByteArray {
+            requireEbayClass(obj.javaClass)
+            return xmlMapper.writer()
+                .withRootName(PropertyName(rootName, namespace))
+                .writeValueAsBytes(obj)
+        }
     }
 
     /* This makes sense because WSDL operations are uniquely referenced by name.  Relevant
@@ -172,9 +183,7 @@ class EbayTrading(
             val wsParam: WebParam = wsMethod.parameters[0].getAnnotation(WebParam::class.java)!!
             val httpRequest = Request.Builder()
                 .url(environment.url.toString())
-                .post(xmlMapper.writer()
-                    .withRootName(PropertyName(wsParam.name, wsParam.targetNamespace))
-                    .writeValueAsBytes(request)
+                .post(marshal(request, wsParam.name, wsParam.targetNamespace)
                     .toRequestBody("text/xml; charset=UTF-8".toMediaType()))
                 .header("X-EBAY-API-SITEID", siteId)
                 .header("X-EBAY-API-COMPATIBILITY-LEVEL", apiVersion)
