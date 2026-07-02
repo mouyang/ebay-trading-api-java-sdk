@@ -8,3 +8,6 @@ gradle/
 
 # any WSDL files
 *.wsdl
+
+# JVM class files
+*.class
