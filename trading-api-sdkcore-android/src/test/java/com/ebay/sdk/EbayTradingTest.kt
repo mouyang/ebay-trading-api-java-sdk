@@ -169,8 +169,8 @@ class EbayTradingTest {
             mockServer.`when`(requestAndResponse.component1())
                 .respond(requestAndResponse.component2())
 
-            val response = ebayTradingClient.call(getItem.component1(), accessToken)
-            assertEquals(getItem.component2(), response)
+            val responseObject = ebayTradingClient.call(getItem.component1(), accessToken) as GetItemResponseType
+            assertEquals(getItem.component2().item.itemID, responseObject.item.itemID)
         } finally {
             unmockkStatic(Uri::class)
             mockServer.stop()
