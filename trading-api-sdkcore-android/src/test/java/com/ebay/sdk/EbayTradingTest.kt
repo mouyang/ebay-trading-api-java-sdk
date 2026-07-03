@@ -2,6 +2,7 @@ package com.ebay.sdk
 
 import android.net.Uri
 import com.ebay.sdk.EbayTrading.Environment
+import com.ebay.sdk.okhttp.TestClientFactory
 import com.ebay.soap.eBLBaseComponents.EBayAPIInterface
 import com.ebay.soap.eBLBaseComponents.GetItemRequestType
 import com.ebay.soap.eBLBaseComponents.GetItemResponseType
@@ -22,14 +23,7 @@ import org.mockserver.integration.ClientAndServer
 import org.mockserver.model.Header
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
-import java.net.InetSocketAddress
-import java.net.Proxy
 import java.nio.charset.Charset
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EbayTradingTest {
@@ -101,18 +95,6 @@ class EbayTradingTest {
         val mockServer = ClientAndServer.startClientAndServer(1000)
         mockkStatic(Uri::class)
 
-        // Copied from Gemini - REQUIRED to keep EbayTrading free of custom "testing-only" URLs.
-        // Create an insecure TrustManager to make OkHttp trust MockServer's self-signed SSL
-        val trustAllCerts = object : X509TrustManager {
-            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-        }
-        val sslContext = SSLContext.getInstance("SSL").apply {
-            init(null, arrayOf<TrustManager>(trustAllCerts), SecureRandom())
-        }
-        // END Copied from Gemini
-
         try {
             val mockProdUri = mockk<Uri>()
             every { mockProdUri.scheme } returns "https"
@@ -121,17 +103,12 @@ class EbayTradingTest {
             every { mockProdUri.toString() } returns Environment.PRODUCTION.urlString
             every { Uri.parse(Environment.PRODUCTION.urlString) } returns mockProdUri
 
-            // Copied from Gemini - REQUIRED for the proxy scaffolding to work
-            val testHttpClient = OkHttpClient.Builder()
-                // eBay Trading supports HTTP 1.1.  Force it here.
-                .protocols(listOf(Protocol.HTTP_1_1))
-                // Explicitly force this specific client instance to route through local MockServer
-                .proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("localhost", 1000)))
-                // Trust MockServer's local SSL certificates
-                .sslSocketFactory(sslContext.socketFactory, trustAllCerts)
-                .hostnameVerifier { _, _ -> true }
-                .build()
-            // END Copied from Gemini
+            val testHttpClient = TestClientFactory.create(
+                OkHttpClient.Builder()
+                    // eBay Trading supports HTTP 1.1.  Force it here.
+                    .protocols(listOf(Protocol.HTTP_1_1))
+                    .hostnameVerifier { _, _ -> true },
+                mockServer)
 
             val url = Environment.PRODUCTION.url
             val apiVersion = "1379"
