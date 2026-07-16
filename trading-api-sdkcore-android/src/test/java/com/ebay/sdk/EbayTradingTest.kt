@@ -17,6 +17,7 @@ import okhttp3.Protocol
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockserver.integration.ClientAndServer
@@ -24,6 +25,10 @@ import org.mockserver.model.Header
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
 import java.nio.charset.Charset
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicReference
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EbayTradingTest {
@@ -148,6 +153,144 @@ class EbayTradingTest {
 
             val responseObject = ebayTradingClient.call(getItem.component1(), accessToken) as GetItemResponseType
             assertEquals(getItem.component2().item.itemID, responseObject.item.itemID)
+        } finally {
+            unmockkStatic(Uri::class)
+            mockServer.stop()
+        }
+    }
+
+    @Test
+    fun call_firesHardExpirationWarningCallback() {
+        val mockServer = ClientAndServer.startClientAndServer(1000)
+        mockkStatic(Uri::class)
+
+        try {
+            val mockProdUri = mockk<Uri>()
+            every { mockProdUri.scheme } returns "https"
+            every { mockProdUri.host } returns "api.ebay.com"
+            every { mockProdUri.path } returns "/ws/api.dll"
+            every { mockProdUri.toString() } returns Environment.PRODUCTION.urlString
+            every { Uri.parse(Environment.PRODUCTION.urlString) } returns mockProdUri
+
+            val testHttpClient = TestClientFactory.create(
+                OkHttpClient.Builder()
+                    .protocols(listOf(Protocol.HTTP_1_1))
+                    .hostnameVerifier { _, _ -> true },
+                mockServer)
+
+            val url = Environment.PRODUCTION.url
+            val apiVersion = "1379"
+            val siteId = "2"
+            val accessToken = "testAccessToken"
+            val hardExpirationWarning = "2026-01-15 12:00:00"
+            val expectedExpiration = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.of("GMT"))
+                .parse(hardExpirationWarning, Instant::from)
+            val capturedExpiration = AtomicReference<Instant>()
+
+            val ebayTradingClient = EbayTrading(
+                apiVersion = apiVersion,
+                siteId = siteId,
+                httpClient = testHttpClient,
+                tokenLifecycleCallback = TokenLifecycleCallback { capturedExpiration.set(it) },
+            )
+
+            val itemID = "110043671232"
+            val getItem = Pair(GetItemRequestType().apply {
+                this.itemID = itemID
+            }, GetItemResponseType().apply {
+                this.hardExpirationWarning = hardExpirationWarning
+                item = ItemType().apply {
+                    this.itemID = itemID
+                }
+            })
+
+            val requestAndResponse = Pair(request()
+                .withMethod("POST")
+                .withSecure(true)
+                .withPath(url.path)
+                .withHeaders(
+                    Header("X-EBAY-API-CALL-NAME", "GetItem"),
+                    Header("X-EBAY-API-SITEID", siteId),
+                    Header("X-EBAY-API-COMPATIBILITY-LEVEL", apiVersion),
+                    Header("X-EBAY-API-IAF-TOKEN", accessToken),
+                    Header("Content-Type", "(?i).*text/xml.*"))
+                , response()
+                    .withStatusCode(200)
+                    .withBody(EbayTrading.marshal(getItem.component2()))
+            )
+            mockServer.`when`(requestAndResponse.component1())
+                .respond(requestAndResponse.component2())
+
+            val responseObject = ebayTradingClient.call(getItem.component1(), accessToken) as GetItemResponseType
+            assertEquals(getItem.component2().item.itemID, responseObject.item.itemID)
+            assertEquals(expectedExpiration, capturedExpiration.get())
+        } finally {
+            unmockkStatic(Uri::class)
+            mockServer.stop()
+        }
+    }
+
+    @Test
+    fun call_skipsHardExpirationWarningCallbackWhenAbsent() {
+        val mockServer = ClientAndServer.startClientAndServer(1000)
+        mockkStatic(Uri::class)
+
+        try {
+            val mockProdUri = mockk<Uri>()
+            every { mockProdUri.scheme } returns "https"
+            every { mockProdUri.host } returns "api.ebay.com"
+            every { mockProdUri.path } returns "/ws/api.dll"
+            every { mockProdUri.toString() } returns Environment.PRODUCTION.urlString
+            every { Uri.parse(Environment.PRODUCTION.urlString) } returns mockProdUri
+
+            val testHttpClient = TestClientFactory.create(
+                OkHttpClient.Builder()
+                    .protocols(listOf(Protocol.HTTP_1_1))
+                    .hostnameVerifier { _, _ -> true },
+                mockServer)
+
+            val url = Environment.PRODUCTION.url
+            val apiVersion = "1379"
+            val siteId = "2"
+            val accessToken = "testAccessToken"
+            val capturedExpiration = AtomicReference<Instant>()
+
+            val ebayTradingClient = EbayTrading(
+                apiVersion = apiVersion,
+                siteId = siteId,
+                httpClient = testHttpClient,
+                tokenLifecycleCallback = TokenLifecycleCallback { capturedExpiration.set(it) },
+            )
+
+            val itemID = "110043671232"
+            val getItem = Pair(GetItemRequestType().apply {
+                this.itemID = itemID
+            }, GetItemResponseType().apply {
+                item = ItemType().apply {
+                    this.itemID = itemID
+                }
+            })
+
+            val requestAndResponse = Pair(request()
+                .withMethod("POST")
+                .withSecure(true)
+                .withPath(url.path)
+                .withHeaders(
+                    Header("X-EBAY-API-CALL-NAME", "GetItem"),
+                    Header("X-EBAY-API-SITEID", siteId),
+                    Header("X-EBAY-API-COMPATIBILITY-LEVEL", apiVersion),
+                    Header("X-EBAY-API-IAF-TOKEN", accessToken),
+                    Header("Content-Type", "(?i).*text/xml.*"))
+                , response()
+                    .withStatusCode(200)
+                    .withBody(EbayTrading.marshal(getItem.component2()))
+            )
+            mockServer.`when`(requestAndResponse.component1())
+                .respond(requestAndResponse.component2())
+
+            ebayTradingClient.call(getItem.component1(), accessToken)
+            assertNull(capturedExpiration.get())
         } finally {
             unmockkStatic(Uri::class)
             mockServer.stop()
