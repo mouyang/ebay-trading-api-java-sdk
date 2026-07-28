@@ -1,0 +1,30 @@
+Prompt: 
+I am planning a hyper-focused rewrite of the eBay Trading API SDK.  There is a lot of features that go beyond communicating with the API.  Act as a software architect, ruthlessly evaluate all of the features and recommend what should be retained or removed.  The primary target environments are Java 11, Kotlin and Android.
+
+A stripped-down file containing the essentials of this project has been provided in @repomix-analyze-output.xml.  Start your analysis there.  Don't pull in additional files, let me know if you need additional context.
+
+1. Core SDK Capabilities
+
+Identify anything that is critical to sending (receiving) data to (from) the eBay Trading API.  For each feature, summarize the follow concisely: 
+
+* Function: What is it? 
+* Purpose: Why it this needed?
+* Implementation Suggestions
+
+2. Secondary Functionality on Requests and Responses (TO EVALUATE FURTHER)
+
+There may be some requirements that need to be fulfilled (example - certain HTTP Headers) when making a request, or there may be some processing that needs to be done on the response (example - checkHardExpirationWarning).  For each feature, summarize the follow concisely: 
+
+* Function: What is it? 
+* Purpose: Why is this needed?
+* Implementation Suggestions
+
+3. Non-Essential Features (DISCARD) 
+
+The SDK has lots of features that developers likely don't care about (example - how many API calls have been made) or can be replicated elsewhere (example - retry could be implemented with OkHttp)  For each feature, summarize the follow concisely: 
+
+* Function: What is it? 
+* Purpose: Why can it be dropped?
+* Replacement: If this feature is needed but is not in the SDK, how can it replicated?
+
+Ensure that the tone is strictly analytical and focuses on minimizing our future maintenance burden.

@@ -1,0 +1,1 @@
+npx repomix@1.16.0 --include "source/{core,helper}/src/com/ebay/sdk/**/*.java,source/core/ebay/DialogFetchToken.java" --instruction-file-path analysis-instructions.txt --compress --remove-comments --remove-empty-lines --style xml --token-count-tree -o repomix-analyze-output.xml
